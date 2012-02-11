@@ -1,0 +1,4 @@
+#= require "plugins"
+
+$(document).ready ->
+	
