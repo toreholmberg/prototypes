@@ -1,4 +1,5 @@
 #= require "plugins"
+#= require "dock"
 
 $(document).ready ->
-	log "Dock"
+	$('#dock').dock()
