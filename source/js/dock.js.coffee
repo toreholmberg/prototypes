@@ -24,7 +24,6 @@
 			@sizes = []
 			@items = @closeTimeout = @closeInterval = @openInterval = null
 			@scale = 0
-
 			plugin = @
 
 			@init()
@@ -45,42 +44,39 @@
 				@closeInterval = null
 		
 				if @scale != 1 && !@openInterval
-					@openInterval = window.setInterval(openLoop, 20)
-		
-		openLoop = ->
-			if plugin.scale < 1
-				 plugin.scale += plugin.options.openCloseSpeed
-			
-			if plugin.scale >= 1
-				plugin.scale = 1
-				window.clearInterval @openInterval
-				@openInterval = null
-			
-			updateItems()
+					@openInterval = window.setInterval( ->
+						if plugin.scale < 1
+						 plugin.scale += plugin.options.openCloseSpeed
+						
+						if plugin.scale >= 1
+							plugin.scale = 1
+							window.clearInterval @openInterval
+							@openInterval = null
+						
+						updateItems()
+					, 20)
 		
 		close = ->
 			if !@closeTimeout && !@closeInterval
-				@closeTimeout = window.setTimeout(closeLoop, 100)
-
-		closeLoop = ->
-			@closeTimeout = null
+				@closeTimeout = window.setTimeout( ->
+					@closeTimeout = null
 				
-			if @openInterval
-				window.clearInterval @openInterval
-				@openInterval = null;
-			
-			@closeInterval = window.setInterval(closeLoop2, 20)
-
-		closeLoop2 = ->
-			if plugin.scale > 0
-				plugin.scale -= plugin.options.openCloseSpeed
-						
-				if plugin.scale <= 0 
-					plugin.scale = 0
-					window.clearInterval @closeInterval
-					@closeInterval = null;
-						
-				updateItems()
+					if @openInterval
+						window.clearInterval @openInterval
+						@openInterval = null;
+					
+					@closeInterval = window.setInterval( ->
+						if plugin.scale > 0
+							plugin.scale -= plugin.options.openCloseSpeed
+									
+							if plugin.scale <= 0 
+								plugin.scale = 0
+								window.clearInterval @closeInterval
+								@closeInterval = null;
+									
+							updateItems()
+					, 20)
+				, 100)
 
 		updateItems = ->
 			plugin.items.each (i) ->
