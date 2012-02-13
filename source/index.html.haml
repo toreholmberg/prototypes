@@ -1,4 +1,4 @@
 #dock
 	.items
 		- data.dock.items.each do |item|
-			.item
+			.item{ :'data-min' => item.min_size, :'data-scale' => item.scale }= image_tag item.asset

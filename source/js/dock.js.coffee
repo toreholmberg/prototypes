@@ -9,7 +9,6 @@
 		range: 2
 		openCloseSpeed: 0.2
 		minSize: 100
-		maxSize: 150
 		itemClass: '.item'
 	
 	class Plugin
@@ -22,27 +21,37 @@
 			@element = $(element)
 
 			@sizes = []
+			@minSize = []
+			@maxSize = []
+
 			@items = @closeTimeout = @closeInterval = @openInterval = null
 			@scale = 0
 			plugin = @
 
 			@init()
-		
+
 		init: ->
 			@items = @element.find(@options.itemClass)
-
 			@items.each (i) ->
-				$(this).css('background-color', '#'+Math.floor(Math.random()*16777215).toString(16))
-				$(this).bind('mousemove', itemMouseMoveHandler)
-				$(this).bind('mouseleave', itemMouseLeaveHandler)
-		
+
+				img = $(this).find('img')
+				img.data('size', {width: img.width(), height: img.height()})
+
+				plugin.minSize[i] = if $(this).data('min') then $(this).data('min') else plugin.options.minSize
+				plugin.maxSize[i] = img.height()
+
+				$(this).bind('mousemove', itemMouseMoveHandler).bind('mouseleave', itemMouseLeaveHandler)
+				$(this).css('margin-top', plugin.maxSize[i] - plugin.minSize[i])
+				resizeImage(img, plugin.minSize[i])
+
+
 		# private
 		open = ->
 				window.clearTimeout @closeTimeout
 				@closeTimeout = null
 				window.clearInterval @closeInterval
 				@closeInterval = null
-		
+				
 				if @scale != 1 && !@openInterval
 					@openInterval = window.setInterval( ->
 						if plugin.scale < 1
@@ -80,19 +89,31 @@
 
 		updateItems = ->
 			plugin.items.each (i) ->
-				size = plugin.options.minSize + plugin.scale * (plugin.sizes[i] - plugin.options.minSize)
-				$(this).css({width: size, height: size, marginTop: (plugin.options.maxSize - size), zIndex: size})
+
+				# log plugin.minSize[i] / plugin.options.minSize
+				# if plugin.minSize[i] != plugin.options.minSize
+				#	size = Math.min(plugin.minSize[i] + plugin.scale * (plugin.sizes[i] - plugin.minSize[i]), plugin.maxSize[i])
+				
+				size = Math.min(plugin.minSize[i] + plugin.scale * (plugin.sizes[i] - plugin.minSize[i]), plugin.maxSize[i])
+
+				$(this).css('margin-top', plugin.maxSize[i] - size)
+				resizeImage($(this).find('img'), size)
+
+		resizeImage = (img, height) ->
+			width = img.data('size').width * (height / img.data('size').height)
+			size = {width: Math.round(width), height: Math.round(height)}
+			img.attr(size).css(size)
+
 
 		# event handlers
 		itemMouseMoveHandler = (e) ->
 			
 			open()
 
-			minSize = plugin.options.minSize
-			maxSize = plugin.options.maxSize
-			range = plugin.options.range
-
 			index = $(this).index()
+			minSize = plugin.minSize[index]
+			maxSize = plugin.maxSize[index]
+			range = plugin.options.range
 			across = e.offsetX / (plugin.sizes[index] || minSize)
 
 			if across
@@ -118,4 +139,5 @@
 		@each ->
 			if !$.data(this, "plugin_#{pluginName}")
 				$.data(@, "plugin_#{pluginName}", new Plugin(@, options))
+
 )(jQuery, window, document)
